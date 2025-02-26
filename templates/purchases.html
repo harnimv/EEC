@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchases</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            text-align: center;
+            flex: 1;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 20px;
+        }
+
+        header a:hover {
+            text-decoration: underline;
+        }
+
+        .purchase-form {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .purchase-form input,
+        .purchase-form select,
+        .purchase-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .purchase-form button {
+            background-color: #004080;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .purchase-form button:hover {
+            background-color: #00509e;
+        }
+
+        .purchase-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .purchase-item {
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 300px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .purchase-item h3 {
+            color: #003366;
+            margin-bottom: 10px;
+        }
+
+        .purchase-item p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .status-pending {
+            color: #cc0000; /* Red for pending */
+        }
+
+        .status-completed {
+            color: #009900; /* Green for completed */
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h3>Purchases</h3>
+        <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    </header>
+
+    <!-- Purchase Form -->
+    <div class="purchase-form">
+        <h2>Add a New Purchase</h2>
+        <form id="purchaseForm">
+            <input type="text" id="product_name" placeholder="Product Name" required>
+            <input type="number" id="quantity" placeholder="Quantity" required>
+            <input type="number" id="price" placeholder="Price" required>
+            <select id="status" required>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+            </select>
+            <button type="submit">Add Purchase</button>
+        </form>
+    </div>
+
+    <!-- Purchase List -->
+    <ul class="purchase-list" id="purchaseList">
+        <!-- Purchase items will be dynamically added here -->
+    </ul>
+
+    <script>
+        // JavaScript to handle form submission and display purchases
+        document.getElementById('purchaseForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const product_name = document.getElementById('product_name').value;
+            const quantity = document.getElementById('quantity').value;
+            const price = document.getElementById('price').value;
+            const status = document.getElementById('status').value; // Get the status from the form
+
+            // Send data to the API
+            fetch('/api/purchases', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ product_name, quantity, price, status }), // Include status in the request
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Add the new purchase to the list
+                    const purchaseList = document.getElementById('purchaseList');
+                    const purchaseItem = document.createElement('li');
+                    purchaseItem.className = 'purchase-item';
+                    purchaseItem.innerHTML = `
+                        <h3>${data.product_name} - $${data.total_price}</h3>
+                        <p>Quantity: ${data.quantity}</p>
+                        <p>Price: $${data.price}</p>
+                        <p class="status-${data.status}">Status: ${data.status}</p>
+                    `;
+                    purchaseList.appendChild(purchaseItem);
+
+                    // Clear the form
+                    document.getElementById('purchaseForm').reset();
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        // Load existing purchases when the page loads
+        fetch('/api/purchases')
+            .then(response => response.json())
+            .then(data => {
+                const purchaseList = document.getElementById('purchaseList');
+                data.forEach(purchase => {
+                    const purchaseItem = document.createElement('li');
+                    purchaseItem.className = 'purchase-item';
+                    purchaseItem.innerHTML = `
+                        <h3>${purchase.product_name} - $${purchase.total_price}</h3>
+                        <p>Quantity: ${purchase.quantity}</p>
+                        <p>Price: $${purchase.price}</p>
+                        <p class="status-${purchase.status}">Status: ${purchase.status}</p>
+                    `;
+                    purchaseList.appendChild(purchaseItem);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+</body>
+</html>

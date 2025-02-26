@@ -317,5 +317,55 @@ def orders_page():
     return render_template('orders.html', orders=orders)
 
 
+# Route to display the profile page
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))  # Redirect if not logged in
+
+    user_id = session['user_id']
+    conn = get_db_connection()
+    user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    conn.close()
+
+    return render_template('profile.html', user=user)
+
+# Route to handle profile updates
+@app.route('/update_profile', methods=['POST'])
+def update_profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))  # Redirect if not logged in
+
+    user_id = session['user_id']
+    name = request.form['name']
+    email = request.form['email']
+    phone = request.form['phone']
+    address = request.form['address']
+    pin_code = request.form['pin_code']
+    password = request.form['password']
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Update user information
+    if password:
+        hashed_password = generate_password_hash(password)
+        cursor.execute(
+            "UPDATE users SET name = ?, email = ?, phone = ?, address = ?, pin_code = ?, password = ? WHERE id = ?",
+            (name, email, phone, address, pin_code, hashed_password, user_id)
+        )
+    else:
+        cursor.execute(
+            "UPDATE users SET name = ?, email = ?, phone = ?, address = ?, pin_code = ? WHERE id = ?",
+            (name, email, phone, address, pin_code, user_id))
+
+    conn.commit()
+    conn.close()
+    session['name'] = name
+
+    return redirect(url_for('profile'))  # Redirect back to the profile page
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | EEC</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('https://dm0qx8t0i9gc9.cloudfront.net/thumbnails/video/YqGSkmb/stylish-abstract-engineering-technology-and-science-motion-background-plexus-style-dynamic-wallpaper-polygons-lines-and-dots-in-organic-motion-computer-generated-footage-depth-of-field-settings_sv9park9_thumbnail-1080_01.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white; /* Text color changed to white for better contrast */
+        }
+
+        .overlay {
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black overlay */
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background for content */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border-radius: 10px;
+        }
+
+        h1 {
+            color: #003366;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #004080;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: #333; /* Dark text for better readability on white background */
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        ul li {
+            margin: 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: #004080;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .login-btn, .register-btn, .logout-btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .login-btn {
+            background-color: #004080;
+        }
+
+        .login-btn:hover {
+            background-color: #00509e;
+        }
+
+        .register-btn {
+            background-color: #0066cc;
+        }
+
+        .register-btn:hover {
+            background-color: #0077dd;
+        }
+
+        .logout-btn {
+            background-color: #cc0000;
+        }
+
+        .logout-btn:hover {
+            background-color: #e60000;
+        }
+
+        .about-section, .products-section, .services-section {
+            margin-top: 40px;
+            text-align: left;
+        }
+
+        .about-section h2, .products-section h2, .services-section h2 {
+            text-align: center;
+        }
+
+        .product-list, .service-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .product-list div, .service-list div {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 30%;
+            text-align: center;
+        }
+
+        .product-list h3, .service-list h3 {
+            color: #003366;
+            margin-bottom: 10px;
+        }
+
+        /* New Styles for Sliding Banner */
+        .slideshow-container {
+            position: relative;
+            width: 100%;
+            height: 400px; /* Adjust height as needed */
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .hero {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #fff;
+            z-index: 2; /* Ensure text is above the slides */
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+        }
+
+        .cta-button {
+            background-color: #ff6600;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            border-radius: 5px;
+        }
+
+        .cta-button:hover {
+            background-color: #e65c00;
+        }
+
+        .image-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .image-section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay to ensure text is readable -->
+    <div class="overlay">
+        <div class="container">
+            <!-- Welcome Message -->
+            {% if 'user_id' in session %}
+                <h1>Welcome {{ session['name'] }}!</h1>
+                <p>You are logged in. <a href="{{ url_for('dashboard') }}">Go to Dashboard</a></p>
+            {% else %}
+                <h1>Welcome to Elango Engineering Company</h1>
+                <p>Please login or register to continue.</p>
+            {% endif %}
+
+            <!-- Navigation Links -->
+            <ul>
+                {% if 'user_id' in session %}
+                    <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('logout') }}" class="logout-btn">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}" class="login-btn">Login</a></li>
+                    <li><a href="{{ url_for('register') }}" class="register-btn">Register</a></li>
+                {% endif %}
+            </ul>
+
+            <!-- Sliding Banner -->
+            <div class="slideshow-container">
+                <!-- Slides -->
+                <div class="slide active" style="background-image: url('https://th.bing.com/th/id/OIP.B17u5xN2chlNtBMxlUiYKQHaF9?w=228&h=183&c=7&r=0&o=5&pid=1.7.jpeg');"></div>
+                <div class="slide" style="background-image: url(c:\Users\LENOVO\Desktop\imageoil.jpeg');"></div>
+
+                <!-- Text Content -->
+                <div class="hero">
+                    <h1>Gearing Industries Silently...</h1>
+                    <p>Your trusted partner in manufacturing high-quality gears and gearboxes since 1997.</p>
+                    <a href="#products" class="cta-button">Explore Our Products</a>
+                </div>
+            </div>
+
+            <!-- About EEC Section -->
+            <div class="about-section">
+                <h2>About Elango Engineering Company</h2>
+                <p>
+                    Elango Engineering Company (EEC) has been a trusted name in the manufacturing of <strong>gears and gearboxes</strong> since 1997. 
+                    With over two decades of experience, we specialize in providing high-quality, precision-engineered solutions for a wide range of industries, 
+                    including textiles, construction, cement, sugar, and light engineering sectors.
+                </p>
+                <p>
+                    Our commitment to quality, innovation, and customer satisfaction has made us a preferred partner for businesses worldwide. 
+                    We offer custom-built gearboxes and geared motors tailored to meet the unique requirements of our clients.
+                </p>
+            </div>
+
+            <!-- Products Section -->
+            <div class="products-section" id="products">
+                <h2>Our Products</h2>
+                <!-- Uploaded Image Above Worm Gear Boxes -->
+                <div class="image-section">
+                    <img src="{{ url_for('static', filename='image.png') }}" alt="Worm Gear Boxes">
+                </div>
+                <div class="product-list">
+                    <div>
+                        <h3>Worm Gear Boxes</h3>
+                        <p>Available in ratios from 5:1 to 70:1, suitable for various industrial applications.</p>
+                    </div>
+                    <div>
+                        <h3>Helical Gear Boxes</h3>
+                        <p>Single and multi-stage options designed for efficiency and durability.</p>
+                    </div>
+                    <div>
+                        <h3>Geared Motors</h3>
+                        <p>1 HP to 10 HP motors engineered for optimal performance.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Section -->
+            <div class="services-section">
+                <h2>Our Services</h2>
+                <div class="service-list">
+                    <div>
+                        <h3>Custom Gearbox Manufacturing</h3>
+                        <p>We design and manufacture gearboxes as per your specific requirements.</p>
+                    </div>
+                    <div>
+                        <h3>Gearbox Servicing</h3>
+                        <p>Expert servicing for all makes and types of gearboxes.</p>
+                    </div>
+                    <div>
+                        <h3>Fast Delivery</h3>
+                        <p>We ensure timely delivery of products and spare parts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for Slideshow
+        let slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                if (i === index) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }
+
+        // Change slide every 5 seconds
+        setInterval(nextSlide, 5000);
+
+        // Show the first slide initially
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>
