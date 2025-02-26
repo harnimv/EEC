@@ -118,8 +118,22 @@ def dashboard():
     conn = get_db_connection()
     user = conn.execute("SELECT name, email FROM users WHERE id = ?", (user_id,)).fetchone()
     orders = conn.execute("SELECT * FROM purchases WHERE user_id = ?", (user_id,)).fetchall()
-    stock = []  # Placeholder for stock data
+    stock = conn.execute("SELECT * FROM purchases WHERE status = ?", ("pending",)).fetchall()
+
+     # Get the total count of purchases for the user
+    purchase_count = conn.execute("SELECT COUNT(*) FROM purchases WHERE user_id = ?", (user_id,)).fetchone()[0]
+    
+    # Get the count of pending and completed orders
+    pending_count = conn.execute("SELECT COUNT(*) FROM purchases WHERE user_id = ? AND status = 'pending'", (user_id,)).fetchone()[0]
+    completed_count = conn.execute("SELECT COUNT(*) FROM purchases WHERE user_id = ? AND status = 'completed'", (user_id,)).fetchone()[0]
+    
+
     conn.close()
+    session["pending_counts"] = len(stock)
+    session["purchase_count"] = purchase_count
+    session["pending_count"] = pending_count
+    session["completed_count"] = completed_count
+
 
     return render_template('dashboard.html', user=user, orders=orders, stock=stock)
 

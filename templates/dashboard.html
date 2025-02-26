@@ -219,15 +219,15 @@
                     <div class="stats">
                         <div class="stat-card">
                             <h3>Total Orders</h3>
-                            <p>25</p>
+                            <p>{{ session.get('purchase_count', 5) }}</p>
                         </div>
                         <div class="stat-card">
                             <h3>Pending Orders</h3>
-                            <p>3</p>
+                            <p>{{ session.get('pending_counts', 5) }}</p>
                         </div>
                         <div class="stat-card">
-                            <h3>Completed Orders</h3>
-                            <p>22</p>
+                            <h3>Completed Orders</h3> 
+                            <p>{{ session.get('completed_count', 5) }}</p>
                         </div>
                     </div>
 
