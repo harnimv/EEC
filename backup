@@ -1,0 +1,325 @@
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
+from config import ENV
+
+app = Flask(__name__)
+DATABASE = 'mydatabase.db'
+app.secret_key = 'your_super_secret_key'  # Change this to a secure key
+
+
+
+def get_db_connection():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+# Display Users
+@app.route('/users')
+def get_users():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    conn.close()
+    return render_template('users.html', users=users)
+
+# Add User (Form Submission)
+@app.route('/add_user', methods=['POST'])
+def add_user():
+    username = request.form['username']
+    password = request.form['password']
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('get_users'))  # Redirect to the user list
+
+# Display Purchases
+from flask import Flask, render_template
+
+# Create a Flask application
+app = Flask(__name__)
+
+# Sample data for purchases
+purchases = [
+    {
+        "product": "Worm Gear Box",
+        "amount": 500,
+        "description": "High-quality worm gear box with a ratio of 5:1 to 70:1.",
+        "image": "worm-gear-box.jpg"
+    },
+    {
+        "product": "Helical Gear Box",
+        "amount": 700,
+        "description": "Single and multi-stage helical gear boxes for industrial use.",
+        "image": "helical-gear-box.jpg"
+    },
+    {
+        "product": "Geared Motor",
+        "amount": 300,
+        "description": "1 HP to 10 HP geared motors for efficient power transmission.",
+        "image": "geared-motor.jpg"
+    },
+    {
+        "product": "Custom Gearbox",
+        "amount": 1000,
+        "description": "Custom-built gearboxes tailored to your specific requirements.",
+        "image": "custom-gearbox.jpg"
+    }
+]
+# Route for the home page
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Route for the purchases page
+@app.route('/purchases')
+def show_purchases():
+    return render_template('purchases.html', purchases=purchases)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+ender_template('index.html')
+
+', methods=['POST'])
+def api_register():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    hashed_password = generate_password_hash(password)
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:# Route for the home page
+@app.route('/')
+def index():
+    return r
+def get_db_connection():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# Create Tables
+def create_tables():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if ENV == "DEV":
+        # Drop table if it exists (ONLY FOR DEVELOPMENT)
+        cursor.execute("DROP TABLE IF EXISTS users")
+
+    # Create Users Table (If Not Exists)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            phone TEXT NOT NULL,
+            address TEXT NOT NULL,
+            pin_code TEXT NOT NULL,
+            password TEXT NOT NULL
+        )
+    ''')
+
+    # Create Purchases Table (If Not Exists)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS purchases (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            product_name TEXT NOT NULL,
+            quantity INTEGER NOT NULL,
+            price REAL NOT NULL,
+            total_price REAL NOT NULL,
+            purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    ''')
+
+    # Create Sales Table (If Not Exists)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sales (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            product_name TEXT NOT NULL,
+            quantity INTEGER NOT NULL,
+            price REAL NOT NULL,
+            total_price REAL NOT NULL,
+            sale_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
+
+# Home Page
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        phone = request.form['phone']
+        address = request.form['address']
+        pin_code = request.form['pin_code']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+
+        if password != confirm_password:
+            return "Passwords do not match!", 400
+
+        hashed_password = generate_password_hash(password)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("INSERT INTO users (name, email, phone, address, pin_code, password) VALUES (?, ?, ?, ?, ?, ?)", 
+                           (name, email, phone, address, pin_code, hashed_password))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            return "Email already registered!", 400  # Handle duplicate email
+
+        conn.close()
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+
+# Login Page
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user and check_password_hash(user['password'], password):
+            session['user_id'] = user['id']
+            session['name'] = user['name']
+            return redirect(url_for('dashboard'))
+        else:
+            return "Invalid email or password!", 401
+
+    return render_template('login.html')
+
+# Dashboard (Protected Route)
+@app.route('/dashboard', methods=['GET'])
+def dashboard():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))  # Redirect if not logged in
+
+    user_id = session['user_id']
+    
+    conn = get_db_connection()
+    user = conn.execute("SELECT name, email FROM users WHERE id = ?", (user_id,)).fetchone()
+    orders = conn.execute("SELECT * FROM purchases WHERE user_id = ?", (user_id,)).fetchall()
+    stock = [] # conn.execute("SELECT * FROM stock").fetchall()
+    conn.close()
+
+    return render_template('dashboard.html', user=user, orders=orders, stock=stock)
+
+
+# Logout
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+# API: Register User
+@app.route('/api/register
+        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
+        conn.commit()
+        user_id = cursor.lastrowid
+    except sqlite3.IntegrityError:
+        return jsonify({"error": "Username already exists"}), 400
+
+    conn.close()
+    return jsonify({"message": "User registered successfully", "user_id": user_id})
+
+# API: Login User
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+    user = cursor.fetchone()
+    conn.close()
+
+    if user and check_password_hash(user['password'], password):
+        return jsonify({"message": "Login successful", "user_id": user['id']})
+    else:
+        return jsonify({"error": "Invalid credentials"}), 401
+
+
+@app.route("/create_tables")
+def create_tables():
+    conn = sqlite3.connect('database.db')  # Connect to SQLite database
+    cursor = conn.cursor()
+
+    # Create Users Table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            phone_no TEXT NOT NULL,
+            address TEXT NOT NULL,
+            pin_code TEXT NOT NULL,
+            password TEXT NOT NULL
+        )
+    ''')
+
+    # Create Purchases Table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS purchases (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            product_name TEXT NOT NULL,
+            quantity INTEGER NOT NULL,
+            date TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    ''')
+
+    # Create Stock Table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS stock (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_name TEXT NOT NULL,
+            available_quantity INTEGER NOT NULL
+        )
+    ''')
+
+    conn.commit()  # Save changes
+    conn.close()   # Close connection
+    print("Tables created successfully!")
+
+    return {
+        "message": "Tables created"
+    }
+
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
