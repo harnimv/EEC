@@ -118,9 +118,9 @@
 
         .product-list, .service-list {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
+            justify-content: space-between; /* Distribute space evenly between items */
+            gap: 20px; /* Add spacing between items */
+            flex-wrap: wrap; /* Allow wrapping if the screen is too small */
         }
 
         .product-list div, .service-list div {
@@ -128,8 +128,9 @@
             padding: 20px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            width: 30%;
+            width: calc(33.33% - 20px); /* Set width for 3 items in a row with spacing */
             text-align: center;
+            box-sizing: border-box; /* Ensure padding and border are included in the width */
         }
 
         .product-list h3, .service-list h3 {
